@@ -58,8 +58,8 @@ function! s:FakeSubstitute(...) range
     let pat2 = '\vFAKE__([[:alnum:]_-]+(\/[[:alnum:]_-]+)+)'
     let sub = '\=fake#has_keyname(submatch(1))?fake#gen(submatch(1)):submatch(0)'
 
-    execute printf(':%s,%ss/%s/%s/g', firstline, lastline, pat1, sub)
-    execute printf(':%s,%ss/%s/%s/g', firstline, lastline, pat2, sub)
+    execute printf(':%s,%ss/%s/%s/ge', firstline, lastline, pat1, sub)
+    execute printf(':%s,%ss/%s/%s/ge', firstline, lastline, pat2, sub)
 endfunction
 
 command! -range=% FakeSubstitute :call <SID>FakeSubstitute(<line1>, <line2>)
