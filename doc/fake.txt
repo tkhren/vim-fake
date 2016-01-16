@@ -156,17 +156,17 @@ Commands ~
 
 :FakeSubstitute						    *:FakeSubstitute*
 :[range]FakeSubstitute
-	Substitute each `FAKE__{keyname}` with `fake#gen({keyname})`.
+	Substitute each `FAKE__{keyname}__` with `fake#gen({keyname})`.
 >
 	<user>
-		<name>FAKE__fullname</name>
-		<age>FAKE__age</age>
-		<job>FAKE__job</job>
+		<name>FAKE__fullname__</name>
+		<age>FAKE__age__</age>
+		<job>FAKE__job__</job>
 	</user>
 	<user>
-		<name>FAKE__fullname</name>
-		<age>FAKE__age</age>
-		<job>FAKE__job</job>
+		<name>FAKE__fullname__</name>
+		<age>FAKE__age__</age>
+		<job>FAKE__job__</job>
 	</user>
 <
 	After execution,

@@ -72,19 +72,8 @@ function! s:Random.random(...) abort  "{{{1
 endfunction
 "}}}1
 
-function! s:Random.choice(list, ...) abort  "{{{1
-    "" 重複あり
-    if empty(a:list)
-        return a:0 ? [] : ''
-    endif
-    let k = get(a:000, 0, 1)
-    let klist = []
-    let n = len(a:list)
-    for i in range(0, k-1)
-        let j = self.random(0, n)
-        call add(klist, get(a:list, j))
-    endfor
-    return a:0 ? klist : klist[0]
+function! s:Random.choice(list) abort  "{{{1
+    return get(a:list, s:Random.random(0, len(a:list)-1), '')
 endfunction
 "}}}1
 
@@ -166,7 +155,10 @@ endfunction
 function! fake#chars(length, ...) abort  "{{{1
     let pattern = get(a:000, 0, '\u\l\d')
     let chars = s:charset(pattern)
-    let pw = s:Random.choice(chars, a:length)
+    let pw = []
+    for i in range(a:length)
+        call add(pw, s:Random.choice(chars))
+    endfor
     return join(pw, '')
 endfunction
 "}}}1
