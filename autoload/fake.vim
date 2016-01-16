@@ -125,9 +125,9 @@ endfunction
 "================================================================
 function! fake#int(...) abort  "{{{1
     "" Return a random integer
-    "" int()       0 ~ MAX_INT
-    "" int(a)      0 ~ a
-    "" int(a,b)    a ~ b
+    "" int()       range [0, MAX_INT]
+    "" int(a)      range [0, a]
+    "" int(a,b)    range [a, b]
     if a:0 >= 2
         let a = float2nr(a:000[0])
         let b = float2nr(a:000[1])
@@ -143,9 +143,9 @@ endfunction
 
 function! fake#float(...) abort  "{{{1
     "" Return a random float
-    "" float()       0.0 ~ 1.0
-    "" float(a)      0.0 ~ a
-    "" float(a,b)    a ~ b
+    "" float()      range [0.0, 1.0]
+    "" float(a)     range [0, a] 
+    "" float(a,b)   range [a, b] 
     let a = get(a:000, 0, 0.0) * 1.0
     let b = get(a:000, 1, 1.0) * 1.0
     return s:Random.random(a, b)
@@ -351,7 +351,7 @@ if !empty(g:fake_bootstrap)
     call fake#define('sex', 'fake#choice(["male", "female"])')
 
     "" Get a name of male or female
-    call fake#define('name', 'fake#int(0,2) ? fake#gen("male_name")'
+    call fake#define('name', 'fake#int(1) ? fake#gen("male_name")'
                                       \ . ' : fake#gen("female_name")')
 
     "" Get a full name

@@ -72,12 +72,12 @@ Functions ~
 fake#int()						    *fake#int()*
 fake#int({max})
 fake#int({min}, {max})
-	Return a random integer in the range of [{min}, {max})
+	Return a random integer in the range of [{min}, {max}]
 
 fake#float()						    *fake#float()*
 fake#float({max})
 fake#float({min}, {max})
-	Return a random floating point number in the range of [{min}, {max})
+	Return a random floating point number in the range of [{min}, {max}]
 
 fake#chars({length}, [{charset}])			    *fake#chars()*
 	Return a string consists of random characters.
@@ -206,7 +206,7 @@ is defined.
     call fake#define('sex', 'fake#choice(["male", "female"])')
 
     "" Get a name of male or female
-    call fake#define('name', 'fake#int(0,2) ? fake#gen("male_name")'
+    call fake#define('name', 'fake#int(1) ? fake#gen("male_name")'
                                       \ . ' : fake#gen("female_name")')
 
     "" Get a full name
