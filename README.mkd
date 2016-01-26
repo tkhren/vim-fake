@@ -3,6 +3,17 @@
 Vim-fake is a Vim plugin to provide a generator of random dummy/filler text.
 
 
+This plugin is useful to generate a nonsense text like _Lorem ipsum_
+
+```
+:echo fake#gen("paragraph")
+
+Ignota autem nostrud albucius sagittis no fabulas erat eam ridens
+et per moderatius 98 movet. Sea iure est integre metus adipisci
+justo id con ultrices omnes minim odioaccommodare. Consul omnium
+enim volumus lectus habeo fuisset pri utinam sem tamquam no.
+```
+
 ## Example
 
 ### Generate
@@ -22,25 +33,26 @@ The following built-in dictionaries({keyname}) are available. A dictionary is a
 simple text file which is like `/usr/share/dict/words` on UNIX.
 `fake#gen({keyname})` choose and return a random line from the {keyname} dictionary.
 
-| {keyname}     | Contents                  | Order              |
-|:--------------|:--------------------------|:-------------------|
-| male_name     | Male names in the world   | Popuration         |
-| female_name   | Female names in the world | Population         |
-| surname       | Surnames in the world     | Population         |
-| country       | Country names             | Population         |
-| gtld          | gTLD                      | Number of websites |
-| job           | Job names                 | &nbsp;             |
-| word          | English words             | &nbsp;             |
-| nonsense      | Nonsense words            | &nbsp;             |
+| {keyname}     | Contents                  |
+|:--------------|:--------------------------|
+| male_name     | Male names in the world   |
+| female_name   | Female names in the world |
+| surname       | Surnames in the world     |
+| country       | Country names             |
+| gtld          | gTLD                      |
+| job           | Job names                 |
+| word          | English words             |
+| nonsense      | Nonsense words            |
 
-This generator is highly customisable. You can add new dictionaries and define keynames. See `:help fake-customizing` to get more information.
+This generator is highly customisable. You can add new dictionaries and define keynames.  
+See `:help fake-customizing` to get more information.
 
 
 ### Replace
 
 To replace these `dummy` with real names
 
-```vim
+```xml
 	<ul>
 		<li> dummy </li>
 		<li> dummy </li>
@@ -51,7 +63,7 @@ To replace these `dummy` with real names
 
 Type next, `:%s/dummy/\=fake#gen("male_name")/g`
 
-```vim
+```xml
 	<ul>
 		<li> Steve </li>
 		<li> Rodney </li>
