@@ -1,0 +1,101 @@
+# Vim-Fake
+
+Vim-fake is a Vim plugin to provide a generator of random dummy/filler text.
+
+
+## Example
+
+### Generate
+
+To generate a random data, please use `fake#gen({keyname})`, where the `{keyname}` is a data source name.
+
+```vim
+:echo fake#gen("country")
+Canada
+:echo fake#gen("country")
+Nigeria
+:echo fake#gen("country")
+Indonesia
+```
+
+The following built-in dictionaries({keyname}) are available. A dictionary is a
+simple text file which is like `/usr/share/dict/words` on UNIX.
+`fake#gen({keyname})` choose and return a random line from the {keyname} dictionary.
+
+| {keyname}     | Contents                  | Order              |
+|:--------------|:--------------------------|:-------------------|
+| male_name     | Male names in the world   | Popuration         |
+| female_name   | Female names in the world | Population         |
+| surname       | Surnames in the world     | Population         |
+| country       | Country names             | Population         |
+| gtld          | gTLD                      | Number of websites |
+| job           | Job names                 | &nbsp;             |
+| word          | English words             | &nbsp;             |
+| nonsense      | Nonsense words            | &nbsp;             |
+
+This generator is highly customisable. You can add new dictionaries and define keynames. See `:help fake-customizing` to get more information.
+
+
+### Replace
+
+To replace these `dummy` with real names
+
+```vim
+	<ul>
+		<li> dummy </li>
+		<li> dummy </li>
+		<li> dummy </li>
+		<li> dummy </li>
+	</ul>
+```
+
+Type next, `:%s/dummy/\=fake#gen("male_name")/g`
+
+```vim
+	<ul>
+		<li> Steve </li>
+		<li> Rodney </li>
+		<li> Leonard </li>
+		<li> Adam </li>
+	</ul>
+```
+
+### Replace Placeholder
+
+You can substitute multiple places,
+
+```xml
+	<user>
+		<name>FAKE__male_name__</name>
+		<origin>FAKE__country__</origin>
+		<job>FAKE__job__</job>
+	</user>
+	<user>
+		<name>FAKE__male_name__</name>
+		<origin>FAKE__country__</origin>
+		<job>FAKE__job__</job>
+	</user>
+```
+
+`:FakeSubstitute` command is to substitute each `FAKE__{keyname}__` with
+`fake#gen({keyname})`, respectively.
+
+```xml
+	<user>
+		<name>Bill</name>
+		<origin>India</origin>
+		<job>Animal Trainer</job>
+	</user>
+	<user>
+		<name>Willard</name>
+		<origin>Nigeria</origin>
+		<job>Civil Engineer</job>
+	</user>
+```
+
+### Insert
+
+To insert these fake texts in the insert-mode,
+use the expression register like `<C-r>=fake#gen("male_name")`
+
+More easily, you probably want to use with a snippet plugin.

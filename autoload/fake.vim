@@ -27,56 +27,6 @@ let s:fake_codes = {}
 let s:fake_cache = {}
 let s:fake_charset_cache = {}
 
-
-"================================================================
-" Pseudo-Random Generator
-"================================================================
-let s:Random = {
-    \ '_r': reltime()[1],
-    \ '_max': 0,
-    \ }
-
-function! s:Random.randombits() abort  "{{{1
-    let hash = sha256(self._r)
-    let self._r = abs(str2nr(hash, 16))
-    
-    if empty(self._max)
-        let rand_max = '7fffffff'  " Int32
-        while str2nr(rand_max, 16) < 0
-            let rand_max .= 'ffffffff'
-        endwhile
-        let self._max = str2nr(rand_max, 16)
-    endif
-
-    return self._r
-endfunction
-"}}}1
-
-function! s:Random.random(...) abort  "{{{1
-    let a = get(a:000, 0, 0.0)
-    let b = get(a:000, 1, 1.0)
-
-    if type(a) != type(0) || type(b) != type(0)
-        let a = 1.0 * a
-        let b = 1.0 * b
-    endif
-
-    let r = self.randombits()
- 
-    let [a,b] = (a > b) ? [b,a] : [a,b]
-    if type(a) == type(0)
-        return (r % (b - a + 1) + a)
-    else
-        return ((1.0 * r / self._max) * (b - a) + a)
-    endif
-endfunction
-"}}}1
-
-function! s:Random.choice(list) abort  "{{{1
-    return get(a:list, s:Random.random(0, len(a:list)-1), '')
-endfunction
-"}}}1
-
 "================================================================
 " Path
 "================================================================
@@ -121,6 +71,30 @@ endfunction
 "}}}1
 
 "================================================================
+" Pseudo-Random Generator
+"================================================================
+let s:Random = {
+    \ '_r': reltime()[1],
+    \ 'RAND_MAX': 0,
+    \ }
+
+function! s:Random.randombits() abort  "{{{1
+    let hash = sha256(self._r)
+    let self._r = abs(str2nr(hash, 16))
+    
+    if empty(self.RAND_MAX)
+        let rand_max = '7fffffff'  " Int32
+        while str2nr(rand_max, 16) < 0
+            let rand_max .= 'ffffffff'
+        endwhile
+        let self.RAND_MAX = str2nr(rand_max, 16)
+    endif
+
+    return self._r
+endfunction
+"}}}1
+
+"================================================================
 " General
 "================================================================
 function! fake#int(...) abort  "{{{1
@@ -128,16 +102,20 @@ function! fake#int(...) abort  "{{{1
     "" int()       range [0, MAX_INT]
     "" int(a)      range [0, a]
     "" int(a,b)    range [a, b]
+
+    let r = s:Random.randombits()
     if a:0 >= 2
         let a = float2nr(a:000[0])
         let b = float2nr(a:000[1])
-        return s:Random.random(a, b)
     elseif a:0 == 1
+        let a = 0
         let b = float2nr(a:000[0])
-        return s:Random.random(0, b)
     else
-        return s:Random.randombits()
+        return r
     endif
+
+    let [a,b] = (a > b) ? [b,a] : [a,b]
+    return (r % (b - a + 1) + a)
 endfunction
 "}}}1
 
@@ -146,60 +124,78 @@ function! fake#float(...) abort  "{{{1
     "" float()      range [0.0, 1.0]
     "" float(a)     range [0, a] 
     "" float(a,b)   range [a, b] 
-    let a = get(a:000, 0, 0.0) * 1.0
-    let b = get(a:000, 1, 1.0) * 1.0
-    return s:Random.random(a, b)
+    if a:0 >= 2
+        let a = get(a:000, 0) * 1.0
+        let b = get(a:000, 1) * 1.0
+    elseif a:0 == 1
+        let a = 0.0
+        let b = get(a:000[0], 0) * 1.0
+    else
+        let a = 0.0
+        let b = 1.0
+    endif
+    
+    let r = s:Random.randombits()
+    let [a,b] = (a > b) ? [b,a] : [a,b]
+    return ((1.0 * r / s:Random.RAND_MAX) * (b - a) + a)
 endfunction
 "}}}1
 
 function! fake#chars(length, ...) abort  "{{{1
     let pattern = get(a:000, 0, '\u\l\d')
     let chars = s:charset(pattern)
+    let mx = len(chars) - 1
     let pw = []
     for i in range(a:length)
-        call add(pw, s:Random.choice(chars))
+        call add(pw, get(chars, fake#int(0, mx), ''))
     endfor
     return join(pw, '')
 endfunction
 "}}}1
 
-function! fake#choice(list, ...) abort  "{{{1
-    if a:0
-        "" `p` is a percentile that must be in [0.0, 1.0]
-        let p = a:000[0]
-        let idx = float2nr(floor(len(a:list) * p))
-        return a:list[idx]
-    else
-        return s:Random.choice(a:list)
-    endif
+function! fake#choice(list) abort  "{{{1
+    return get(a:list, fake#int(0, len(a:list)-1), '')
 endfunction
 "}}}1
 
-function! fake#cached(keyname) abort  "{{{1
-    if has_key(s:fake_cache, a:keyname)
-        return s:fake_cache[a:keyname]
+function! fake#get(list, rate) abort  "{{{1
+    "" `rate` that must be in [0.0, 1.0] is a relative position
+    "" against the whole list.
+    ""
+    "" If rate=0.0, return the first element of the list.
+    "" If rate=0.5, return an element at `len(list)/2`.
+    "" If rate=1.0, return the last element of the list.
+
+    let idx = float2nr(floor(len(a:list) * a:rate))
+    return get(a:list, idx)
+endfunction
+"}}}1
+
+function! fake#load(dictname) abort  "{{{1
+    if has_key(s:fake_cache, a:dictname)
+        return s:fake_cache[a:dictname]
     endif
 
     let srcpath = join(g:fake_src_paths, ',')
-    let srcpaths = split(globpath(srcpath, a:keyname))
+    let srcpaths = split(globpath(srcpath, a:dictname))
 
     if empty(srcpaths)
         echohl ErrorMsg
         echo printf('The `%s` was not defined or found in g:fake_src_paths.',
-                    \ a:keyname)
+                    \ a:dictname)
         echohl None
         return []
     endif
 
     if s:path_isfile(srcpaths[0])
         let lines = readfile(srcpaths[0])
-        let s:fake_cache[a:keyname] = lines
-        return s:fake_cache[a:keyname]
+        let s:fake_cache[a:dictname] = lines
+        return s:fake_cache[a:dictname]
     else
         echohl ErrorMsg
         echo printf('`%s` is a directory. `%s` must be a valid file.',
                     \ srcpaths[0],
-                    \ a:keyname)
+                    \ a:dictname)
         echohl None
         return []
     endif
@@ -231,7 +227,7 @@ function! fake#gen(keyname) abort  "{{{1
     if has_key(s:fake_codes, a:keyname)
         return eval(s:fake_codes[a:keyname])
     else
-        return fake#choice(fake#cached(a:keyname))
+        return fake#choice(fake#load(a:keyname))
     endif
 endfunction
 "}}}1
@@ -246,7 +242,7 @@ endfunction
 "================================================================
 " Utility Functions
 "================================================================
-function! fake#gamma_variate(a, b) abort  "{{{1
+function! fake#gammapdf(a, b) abort  "{{{1
     if a:a <= 0.0 || a:b <= 0.0
         echomsg 'Error'
     endif
@@ -256,11 +252,11 @@ function! fake#gamma_variate(a, b) abort  "{{{1
         let sv = 1.0 + log(4.5)
     
         while 1
-            let u1 = s:Random.random()
+            let u1 = fake#float()
             if u1 < 1.0e-6
                 continue
             endif
-            let u2 = 1.0 - s:Random.random()
+            let u2 = 1.0 - fake#float()
             let v = log(u1/(1.0 - u1)) / nv
             let x = a:a * exp(v)
             let z = u1 * u1 * u2
@@ -272,23 +268,23 @@ function! fake#gamma_variate(a, b) abort  "{{{1
         endwhile
 
     elseif a:a == 1.0
-        let u1 = s:Random.random()
+        let u1 = fake#float()
         while u1 <= 1.0e-6
-            let u1 = s:Random.random()
+            let u1 = fake#float()
         endwhile
         return -1.0 * log(u1) * a:b
 
     else
         let E = exp(1)
         while 1
-            let u1 = s:Random.random()
+            let u1 = fake#float()
             let v = (E + a:a) / E
             let p = v * u1
             let x = (p <= 1.0) ?
                         \ pow(p, (1.0/a:a)) :
                         \ (-1.0 * log((v - p)/a:a))
 
-            let u2 = s:Random.random()
+            let u2 = fake#float()
             if p > 1.0
                 if u2 <= pow(x, (a:a - 1.0))
                     break
@@ -302,17 +298,17 @@ function! fake#gamma_variate(a, b) abort  "{{{1
 endfunction
 " }}}1
 
-function! fake#beta_variate(a, b) abort "{{{1
-    let x = fake#gamma_variate(a:a, 1.0)
-    return (x > 0.0) ? (x / (x + fake#gamma_variate(a:b, 1.0))) : 0.0
+function! fake#betapdf(a, b) abort "{{{1
+    let x = fake#gammapdf(a:a, 1.0)
+    return (x > 0.0) ? (x / (x + fake#gammapdf(a:b, 1.0))) : 0.0
 endfunction
 "}}}1
 
-function! fake#normal_variate(mu, sigma) abort "{{{1
+function! fake#normalpdf(mu, sigma) abort "{{{1
     let nv = 4.0 * exp(-0.5) / sqrt(2.0)
     while 1
-        let u1 = s:Random.random()
-        let u2 = 1.0 - s:Random.random()
+        let u1 = fake#float()
+        let u2 = 1.0 - fake#float()
         let z1 = nv * (u1 - 0.5) / u2
         let z2 = z1 * z1 / 4.0
         if z2 <= (-1.0 * log(u2))
@@ -323,13 +319,13 @@ function! fake#normal_variate(mu, sigma) abort "{{{1
 endfunction
 "}}}1
 
-function! fake#lognormal_variate(mu, sigma) abort  "{{{1
-    return exp(fake#normal_variate(a:mu, a:sigma))
+function! fake#lognormalpdf(mu, sigma) abort  "{{{1
+    return exp(fake#normalpdf(a:mu, a:sigma))
 endfunction
 "}}}1
 
-function! fake#exp_variate(lambda) abort  "{{{1
-    return -1.0 * log(1.0 - s:Random.random()) / a:lambda
+function! fake#exppdf(lambda) abort  "{{{1
+    return -1.0 * log(1.0 - fake#float()) / a:lambda
 endfunction
 "}}}1
 
@@ -358,25 +354,27 @@ if !empty(g:fake_bootstrap)
     call fake#define('fullname', 'fake#gen("name") . " " . fake#gen("surname")')
 
     "" Get an age weighted by generation distribution
-    call fake#define('age', 'float2nr(floor(110 * fake#beta_variate(1.0, 1.45)))')
+    call fake#define('age', 'float2nr(floor(110 * fake#betapdf(1.0, 1.45)))')
 
     "" Get a country weighted by population distribution
-    call fake#define('country', 'fake#choice(fake#cached("country"),'
-                            \ . 'fake#beta_variate(0.2, 4.0))')
+    call fake#define('country', 'fake#get(fake#load("country"),'
+                            \ . 'fake#betapdf(0.2, 4.0))')
 
     "" Get a gTLD (Occurance is ordered by number of websites)
-    call fake#define('gtld', 'fake#choice(fake#cached("gtld"),'
-                            \ . 'fake#beta_variate(0.2, 3.0))')
+    call fake#define('gtld', 'fake#get(fake#load("gtld"),'
+                            \ . 'fake#betapdf(0.2, 3.0))')
 
-    call fake#define('email', 'tolower(printf("%s@%s.%s",'
+    call fake#define('email', 'tolower(substitute(printf("%s@%s.%s",'
                             \ . 'fake#gen("name"),'
                             \ . 'fake#gen("surname"),'
-                            \ . 'fake#gen("gtld")))')
+                            \ . 'fake#gen("gtld")), "\\s", "-", "g"))')
 
     "" Get a nonsense text like Lorem ipsum
+    call fake#define('_nonsense', 'fake#int(99) ? fake#gen("nonsense") : (fake#chars(fake#int(1,4),"\\d"))')
+
     call fake#define('sentense', 'fake#capitalize('
-                            \ . 'join(map(range(fake#int(3,15)),"fake#gen(\"nonsense\")"))'
-                            \ . ' . fake#chars(1,"..............,!?"))')
+                            \ . 'join(map(range(fake#int(3,15)),"fake#gen(\"_nonsense\")"))'
+                            \ . ' . fake#chars(1,"..............!?"))')
 
     call fake#define('paragraph', 'join(map(range(fake#int(3,10)),"fake#gen(\"sentense\")"))')
 
@@ -385,7 +383,6 @@ if !empty(g:fake_bootstrap)
 
     "" Overwrite the existing keyname
     " call fake#define('lipsum', 'join(map(range(fake#int(3,15)),"fake#gen(\"word\")"))')
-
 endif
 
 " vim: ft=vim fenc=utf-8 ff=unix foldmethod=marker:
