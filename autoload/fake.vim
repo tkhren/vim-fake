@@ -52,7 +52,7 @@ function! s:charset(pattern) abort  "{{{1
     let lowercase = 'abcdefghijklmnopqrstuvwxyz'
     let letters   = uppercase . lowercase
     let digits    = '0123456789'
-    let hexdigits = '0123456789ABCDEFabcdef'
+    let hexdigits = '0123456789ABCDEF'
     let octdigits = '01234567'
     let keywords  = uppercase . lowercase . digits . '_'
 
@@ -64,9 +64,8 @@ function! s:charset(pattern) abort  "{{{1
     let cs = substitute(cs, '\\x', hexdigits, 'g')
     let cs = substitute(cs, '\\o', octdigits, 'g')
 
-    let css = split(cs, '\zs')
-    let s:fake_charset_cache[a:pattern] = css
-    return css
+    let s:fake_charset_cache[a:pattern] = cs
+    return cs
 endfunction
 "}}}1
 
@@ -144,10 +143,10 @@ endfunction
 function! fake#chars(length, ...) abort  "{{{1
     let pattern = get(a:000, 0, '\u\l\d')
     let chars = s:charset(pattern)
-    let mx = len(chars) - 1
+    let mx = strlen(chars) - 1
     let pw = []
     for i in range(a:length)
-        call add(pw, get(chars, fake#int(0, mx), ''))
+        call add(pw, strpart(chars, fake#int(0, mx), 1))
     endfor
     return join(pw, '')
 endfunction
