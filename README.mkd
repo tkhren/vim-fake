@@ -1,7 +1,7 @@
 # Vim-Fake
 
 Vim-fake is a Vim plugin to provide a generator of random dummy/filler text,
-which is useful to generate a nonsense text like _Lorem ipsum_.
+which is useful to generate a nonsense text like [_Lorem ipsum_](https://en.wikipedia.org/wiki/Lorem_ipsum).
 
 ```vim
 :echo fake#gen("paragraph")
@@ -112,7 +112,7 @@ use the expression register like `<C-r>=fake#gen("male_name")`
 More easily, you probably want to use with a snippet plugin.
 
 
-## More customized generators
+## Define New Generators
 
 **You can define a new generator in various combination of the existing `{keyname}s`.**
 
@@ -201,7 +201,7 @@ which its choice is uniformly flat and not biased.
 If you need weighted choice, try a combination of `get()` and `betapdf()`.
 
 `betapdf()` is useful as the second argument of `get()`, and its shape chart
-ingicates its occurrence tendency or frequency. Refer to the following websites
+indicates its occurrence tendency or frequency. Refer to the following websites
 about beta distribution or a way to decide the shape parameters _a,b_.
 
 [Beta distribution - Wolfram|Alpha](http://www.wolframalpha.com/input/?i=beta+distribution)  
@@ -222,6 +222,9 @@ India
 :echo fake#gen("country")
 China
 ```
+
+##### The chart of betapdf(0.2, 4.0)
+![betapdf(0.2, 4.0)](https://qiita-image-store.s3.amazonaws.com/0/67544/911d3e93-b76f-cf41-de7b-e55dac920ffe.png "The chart of betapdf(0.2, 4.0)")
 
 ##### Other examples
 
