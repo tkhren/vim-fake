@@ -1,73 +1,179 @@
-*fake.txt*	Random dummy/filler text generator.	    *fake*
+*fake.txt*	Random dummy/filler text generator.		*fake*
 
-Version: 0.0.2
+Version: 0.1.0
 Author : tkhren <m.tkhren@gmail.com>
 License: So-called MIT/X license  {{{
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
+	Permission is hereby granted, free of charge, to any person obtaining
+	a copy of this software and associated documentation files (the
+	"Software"), to deal in the Software without restriction, including
+	without limitation the rights to use, copy, modify, merge, publish,
+	distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
 
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
+	The above copyright notice and this permission notice shall be included
+	in all copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }}}
 
 ==============================================================================
-CONTENTS						    *fake-contents*
+CONTENTS							*fake-contents*
 
 INTRODUCTION						|fake-introduction|
 INTERFACE						|fake-interface|
 CUSTOMIZING						|fake-customizing|
-EXAMPLE							|fake-example|
-CHANGELOG						|fake-changelog|
 OTHERS							|fake-others|
+CHANGELOG						|fake-changelog|
 
 
 ==============================================================================
 INTRODUCTION						*fake-introduction*
 
-vim-fake is a Vim plugin to provide a generator of random dummy/filler text.
+Vim-fake is a Vim plugin to provide a generator of random dummy/filler text,
+which is useful to generate a nonsense text like "Lorem ipsum".
+>
+	:echo fake#gen("paragraph")
 
+	Ignota autem nostrud albucius sagittis no fabulas erat eam ridens
+	et per moderatius 98 movet? Sea iure est integre metus adipisci
+	justo id con ultrices omnes minim odioaccommodare. Consul omnium
+	enim volumus lectus habeo fuisset pri utinam sem tamquam no.
+<
 Latest version:
 https://github.com/tkhren/vim-fake
 
+
+------------------------------------------------------------------------------
+Generate ~
+
+`fake#gen({keyname})` is to generate a random data,
+where the `{keyname}` is a data source name.
+For example, if you get a country name, use `"country"`.
+
+|fake#gen()| returns a different answer for each execution.
+>
+	:echo fake#gen("country")
+	Canada
+	:echo fake#gen("country")
+	Nigeria
+	:echo fake#gen("country")
+	Indonesia
+<
+
+The following built-in dictionaries({keyname}) are available as data sources.
+The dictionary is a simple text file which is like `/usr/share/dict/words` on UNIX.
+`fake#gen({keyname})` chooses and returns a random line from the {keyname} dictionary.
+
+| {keyname}     | Contents                    | Order               |
+| ------------- | --------------------------- | ------------------- |
+| male_name     | Male names in the world     | Population          |
+| female_name   | Female names in the world   | Population          |
+| surname       | Surnames in the world       | Population          |
+| country       | Country names               | Population          |
+| gtld          | gTLD                        | Number of websites  |
+| job           | Job names                   |                     |
+| word          | English words               |                     |
+| nonsense      | Nonsense words              |                     |
+
+------------------------------------------------------------------------------
+Replace ~
+
+To replace the following `dummy` texts with real names
+
+>
+	<ul>
+		<li> dummy </li>
+		<li> dummy </li>
+		<li> dummy </li>
+		<li> dummy </li>
+	</ul>
+<
+
+Type next, `:%s/dummy/\=fake#gen("male_name")/g`
+
+>
+	<ul>
+		<li> Steve </li>
+		<li> Rodney </li>
+		<li> Leonard </li>
+		<li> Adam </li>
+	</ul>
+<
+------------------------------------------------------------------------------
+Replace Placeholder ~
+
+To substitute multiple places with placeholder,
+
+>
+	<user>
+		<name>FAKE__male_name__</name>
+		<origin>FAKE__country__</origin>
+		<job>FAKE__job__</job>
+	</user>
+	<user>
+		<name>FAKE__male_name__</name>
+		<origin>FAKE__country__</origin>
+		<job>FAKE__job__</job>
+	</user>
+<
+
+|:FakeSubstitute| command is to substitute each `FAKE__{keyname}__` with
+`fake#gen({keyname})`, respectively.
+
+>
+	<user>
+		<name>Bill</name>
+		<origin>Pakistan</origin>
+		<job>Animal Trainer</job>
+	</user>
+	<user>
+		<name>Willard</name>
+		<origin>Bangladesh</origin>
+		<job>Civil Engineer</job>
+	</user>
+<
+------------------------------------------------------------------------------
+Insert ~
+
+To insert these fake texts in the insert-mode,
+use the expression register like `<C-r>=fake#gen("male_name")`
+
+More easily, you probably want to use with a snippet plugin.
+
+
 ==============================================================================
-INTERFACE						    *fake-interface*
+INTERFACE							*fake-interface*
 
 Variables ~
 
-g:fake_src_paths					    *g:fake_src_paths*
+g:fake_src_paths						*g:fake_src_paths*
 	(Default: [])
 	Directory list. The each directory must contain dictionary source
-	files. *fake#load()* will use it with *globpath()* to get a {keyname}
+	files. |fake#load()| will use it with |globpath()| to get a {keyname}
 	dictionary, and the first match found will be used.
-	If the given {keyname} is not found in the paths, it will find 
-	built-in source directory ("{THIS_PLUGIN_DIR}/src") as fallback.
+	If the given {keyname} is not found on the paths, it will find 
+	built-in source directory (`{THIS_PLUGIN_DIR}/src`) as fallback.
 >
 	let g:fake_src_paths = ['/home/user/.vim/fake_src1',
-			    \ . '/home/user/.vim/fake_src2']
+				\ . '/home/user/.vim/fake_src2']
 <
 
-g:fake_bootstrap					    *g:fake_bootstrap*
+g:fake_bootstrap						*g:fake_bootstrap*
 	(Default: 0)
 	If this variable is non-zero, load some definitions.
-	See *fake-customizing*
+	See |fake-customizing|
 
 ------------------------------------------------------------------------------
 Functions ~
 
-fake#int()						    *fake#int()*
+fake#int()							*fake#int()*
 fake#int({max})
 fake#int({min}, {max})
 	Return a random integer
@@ -77,7 +183,7 @@ fake#int({min}, {max})
 	int({max})		[0, {max}]
 	int({min}, {max})	[{min}, {max}]
 
-fake#float()						    *fake#float()*
+fake#float()							*fake#float()*
 fake#float({max})
 fake#float({min}, {max})
 	Return a random floating point number
@@ -87,20 +193,20 @@ fake#float({min}, {max})
 	float({max})		[0.0, {max}]
 	float({min}, {max})	[{min}, {max}]
 
-fake#chars({length}, [{charset}])			    *fake#chars()*
+fake#chars({length}, [{charset}])				*fake#chars()*
 	Return a string consists of random characters.
 	This function is useful to generate a password.
 >
-        :echo fake#chars(8, "abc")
-        cbabccab
+	:echo fake#chars(8, "abc")
+	cbabccab
 <
-fake#choice({list})					    *fake#choice()*
+fake#choice({list})						*fake#choice()*
 	Choose a random element from the {list}.
 
-fake#get({list}, {rate})				    *fake#get()*
+fake#get({list}, {rate})					*fake#get()*
 	Get an element at {rate} from the {list}.
 	{rate} is a relative position against the whole list, and
-        must be a floating point number in [0.0, 1.0]
+	must be a floating point number in [0.0, 1.0]
 	
 	If rate=0.0, return the first element of the {list}.
 	If rate=0.5, return an element at `len(list)/2`.
@@ -108,40 +214,40 @@ fake#get({list}, {rate})				    *fake#get()*
 
 	This is equivalent to `list[floor(len(list)*rate)]`.
 
-        See also *fake#betapdf()*
+	See also |fake#betapdf()|
 
-fake#load({dictname})					    *fake#load()*
+fake#load({dictname})						*fake#load()*
 	Return a list of all lines of a prepared dictionary file named
 	{dictname}. Glob searching the {dictname} in the |g:fake_src_paths|,
-        the first found dictionary will be loaded.
+	the first found dictionary will be loaded.
 
 	The loaded dictionary will be kept on memory until calling
-        *fake#free_cache()*
+	|fake#free_cache()|
 
-fake#define({keyname}, {code})				    *fake#define()*
+fake#define({keyname}, {code})					*fake#define()*
 	Define a code snippet that will be executed in fake#gen().
 	The {code} must be an expression capable of evaluating with *eval()* .
 	{keyname} should consist of [a-zA-Z0-9_/]
 
-fake#gen({keyname})					    *fake#gen()*
-	If {keyname} is registered with *fake#define()* , return `eval(code)`.
+fake#gen({keyname})						*fake#gen()*
+	If {keyname} is registered with |fake#define()| , return `eval(code)`.
 	Otherwise, return `fake#choice(fake#load(keyname))`.
 
-fake#free_cache()					    *fake#free_cache()*
+fake#free_cache()						*fake#free_cache()*
 	Free cached dictionaries from memory.
 	This function will be called when |BufHidden| as an AutoCommand
 
 
 Utility functions ~
 
-fake#betapdf({a}, {b})					    *fake#betapdf()*
-	The Propbability density function of the beta distribution.
-        Return a random floating point number in range [0.0, 1.0]
-	for the shape parameters {a},{b} > 0.
+fake#betapdf({a}, {b})						*fake#betapdf()*
+	Return a random floting point number between 0.0 and 1.0 that
+	has the occurrence of the Beta probability distribution,
+	where the shape parameters a,b > 0
 
-	This function is useful as the second argument of *fake#get()*
+	This function is useful as the second argument of |fake#get()|
 	for weighted choice. 
-        
+
 	Beta Distribution Calculator
 	http://keisan.casio.com/exec/system/1180573226
 
@@ -154,191 +260,175 @@ fake#betapdf({a}, {b})					    *fake#betapdf()*
 <
 	Get country weighted by population distribution
 	(* "country" dictionary is ordered by population)
-        Most of cases, `fake#gen("country")` will return "China" or "India"
+	Most of cases, `fake#gen("country")` will frequently return
+	"China" or "India"
 >
 	call fake#define('country', 'fake#get(fake#load("country"),'
 				\ . 'fake#betapdf(0.4, 6.0))')
 <
 
-fake#capitalize({str})					    *fake#capitalize()*
-fake#titlize({str})					    *fake#titlize()*
-	Convert letter case. See also *toupper()* and *tolower()* .
+fake#capitalize({str})						*fake#capitalize()*
+fake#titlize({str})						*fake#titlize()*
+	Convert letter case. See also |toupper()| and |tolower()| .
 >
 	fake#capitalize("SAMPLE TEXT")  =>  "Sample text"
-	fake#titlize("SAMPLE TEXT")  =>  "Sample Text"
+	fake#titlize("SAMPLE TEXT")     =>  "Sample Text"
 <
 ------------------------------------------------------------------------------
 Commands ~
 
-:FakeSubstitute						    *:FakeSubstitute*
+:FakeSubstitute							*:FakeSubstitute*
 :[range]FakeSubstitute
 	Substitute each `FAKE__{keyname}__` with `fake#gen({keyname})`.
 
-	See *fake-example*
-
-==============================================================================
-EXAMPLE								*fake-example*
-
-Replace ~
-
-To replace these `dummy` with real names
->
-	<ul>
-		<li> dummy </li>
-		<li> dummy </li>
-		<li> dummy </li>
-		<li> dummy </li>
-	</ul>
-<
-Type next, `:%s/dummy/\=fake#gen("male_name")/g`
->
-	<ul>
-		<li> Steve </li>
-		<li> Rodney </li>
-		<li> Leonard </li>
-		<li> Adam </li>
-	</ul>
-<
-
-Replace Placeholder~
-
-*:FakeSubstitute* command is to substitute each `FAKE__{keyname}__` with
-`fake#gen({keyname})`.
->
-	<user>
-		<name>FAKE__male_name__</name>
-		<origin>FAKE__country__</origin>
-		<job>FAKE__job__</job>
-	</user>
-	<user>
-		<name>FAKE__male_name__</name>
-		<origin>FAKE__country__</origin>
-		<job>FAKE__job__</job>
-	</user>
-<
-	After execution,
->
-	<user>
-		<name>Bill</name>
-		<origin>India</origin>
-		<job>Animal Trainer</job>
-	</user>
-	<user>
-		<name>Willard</name>
-		<origin>Nigeria</origin>
-		<job>Civil Engineer</job>
-	</user>
-<
-
-Insert ~
-
-To insert these fake texts in the insert-mode,
-use the expression register like `<C-r>=fake#gen("male_name")`
-
-More easily, you probably want to use with a snippet plugin.
+	See |fake-introduction|
 
 
 ==============================================================================
 CUSTOMIZING						*fake-customizing*
 
-The following built-in dictionaries({dictname}) are available. A dictionary is a
-simple text file which is like `/usr/share/dict/words` on UNIX. These dictionaries
-will be loaded and converted to lines list by *fake#load()* or *fake#gen()* .
+You can define a new generator in various combination of the existing
+{keyname}s.
+
+`fake#define({keyname},{code})` defines a new {keyname}, where the {code}
+is a vimL expression.
+
+`fake#gen({keyname})` will return `eval({code})` if the {keyname} is defined.
+Otherwise, it will search {keyname} dictionary on |g:fake_src_paths| and
+return a random line of the one. The later code is equivalent to
+`fake#choice(fake#load({keyname}))`.
+
+
+There are some definition examples,
 >
-    * male_name		    (Male names in the world)
-    * female_name	    (Female names in the world)
-    * surname		    (Surnames in the world)
-    * country		    (Country names)
-    * gtld		    (gTLD)
-    * job		    (Job names)
-    * word		    (English words)
-    * nonsense		    (Nonsense words)
+	"" Choose a random element from a list
+	call fake#define('sex', 'fake#choice(["male", "female"])')
+
+	"" Get a name of male or female
+	call fake#define('name', 'fake#int(1) ? fake#gen("male_name")'
+					  \ . ' : fake#gen("female_name")')
+
+	"" Get a full name
+	call fake#define('fullname', 'fake#gen("name") . " " . fake#gen("surname")')
+
+	"" Get a nonsense text like Lorem ipsum
+	call fake#define('sentense', 'fake#capitalize('
+		\ . 'join(map(range(fake#int(3,15)),"fake#gen(\"nonsense\")"))'
+		\ . ' . fake#chars(1,"..............!?"))')
+
+	call fake#define('paragraph', 'join(map(range(fake#int(3,10)),'
+				  \ . '"fake#gen(\"sentense\")"))')
+
+	"" Alias
+	call fake#define('lipsum', 'fake#gen("paragraph")')
 <
-You can define new {keyname} in various combination of the existing {keyname}s
-({dictname}). The following code will be loaded when |g:fake_bootstrap|
-is defined.
+After these definitions,
 >
-    "" Choice a random element from a list
-    call fake#define('sex', 'fake#choice(["male", "female"])')
+	:echo fake#gen("sex")
+	female
 
-    "" Get a name of male or female
-    call fake#define('name', 'fake#int(1) ? fake#gen("male_name")'
-                                      \ . ' : fake#gen("female_name")')
+	:echo fake#gen("fullname")
+	Janet Berry
 
-    "" Get a full name
-    call fake#define('fullname', 'fake#gen("name") . " " . fake#gen("surname")')
+	:echo fake#gen("sentense")
+	Explicari con hendrerit dolore efficiendi laoreet!
 
-    "" Get an age weighted by generation distribution
-    call fake#define('age', 'float2nr(floor(110 * fake#betapdf(1.0, 1.45)))')
-
-    "" Get a country weighted by population distribution
-    call fake#define('country', 'fake#get(fake#load("country"),'
-                            \ . 'fake#betapdf(0.2, 4.0))')
-
-    "" Get a gTLD (Occurance is ordered by number of websites)
-    call fake#define('gtld', 'fake#get(fake#load("gtld"),'
-                            \ . 'fake#betapdf(0.2, 3.0))')
-
-    call fake#define('email', 'tolower(substitute(printf("%s@%s.%s",'
-                            \ . 'fake#gen("name"),'
-                            \ . 'fake#gen("surname"),'
-                            \ . 'fake#gen("gtld")), "\\s", "-", "g"))')
-
-    "" Get a nonsense text like Lorem ipsum
-    call fake#define('_nonsense', 'fake#int(99) ? fake#gen("nonsense") : (fake#chars(fake#int(1,4),"\\d"))')
-
-    call fake#define('sentense', 'fake#capitalize('
-                            \ . 'join(map(range(fake#int(3,15)),"fake#gen(\"_nonsense\")"))'
-                            \ . ' . fake#chars(1,"..............!?"))')
-
-    call fake#define('paragraph', 'join(map(range(fake#int(3,10)),"fake#gen(\"sentense\")"))')
-
-    "" Alias
-    call fake#define('lipsum', 'fake#gen("paragraph")')
-
-    "" Overwrite the existing keyname
-    " call fake#define('lipsum', 'join(map(range(fake#int(3,15)),"fake#gen(\"word\")"))')
+	:echo fake#gen("paragraph")
+	Vim vitae fugit vel torquatos! Neque veniam summo tamquam nulla
+	hendrerit mucius at commodo repudiare sint sodales in. Audiam
+	detracto erant enim laudem error error lucilius definitiones integre.
+	Eam veri gravida recteque sit con te agam posidonium fabulas
+	omittantur diam feugiat noster. Denique bibendum exerci populo usu
+	netus exerci. Fusce mutat posidonium el est nominati o iriure nec
+	quidam soluta accusam? Felis pericula leo aeque turpis ne illum integer.
+	Cetero nullam sonet zril vulputate. Cetero corrumpit quisque nam doming
+	turpis mutat solet.
 <
-
-==============================================================================
-CHANGELOG						    *fake-changelog*
-
-0.0.2	2016-1-26
-	- Some Bugfixes
-
-0.0.1	2016-1-16
-	- Initial version.
-
-==============================================================================
-OTHERS	    					    	    *fake-others*
 
 ------------------------------------------------------------------------------
-Disclaimer infomartion ~
+Weighted Choice ~
 
-* This plugin uses *sha256()* as pseudo-random generator, so that means its
+The |fake#choice()| chooses a random element of the given list,
+which its choice is uniformly flat and not biased.
+If you need weighted choice, try a combination of |fake#get()| and |fake#betapdf()|.
+
+|fake#betapdf()| is useful as the second argument of |fake#get()|, and its shape
+chart ingicates its occurrence tendency or frequency.
+
+To tell the truth, the built-in "country" dictionary is ordered by population.
+If you need to frequently get "China" or "India" which has huge population,
+
+>
+	call fake#define('country', 'fake#get(fake#load("country"),'
+				\ . 'fake#betapdf(0.2, 4.0))')
+
+
+	:echo fake#gen("country")
+	China
+	:echo fake#gen("country")
+	India
+	:echo fake#gen("country")
+	China
+<
+On the other hand,
+>
+	"" Get an age weighted by generation distribution
+	call fake#define('age', 'float2nr(floor(110 * fake#betapdf(1.0, 1.45)))')
+
+	"" Get a domain (its occurrence is ordered by number of websites)
+	call fake#define('gtld', 'fake#get(fake#load("gtld"),'
+			    \ . 'fake#betapdf(0.2, 3.0))')
+
+	call fake#define('email', 'tolower(substitute(printf("%s@%s.%s",'
+			    \ . 'fake#gen("name"),'
+			    \ . 'fake#gen("surname"),'
+			    \ . 'fake#gen("gtld")), "\\s", "-", "g"))')
+<
+
+The above definitions will be loaded when |g:fake_bootstrap| is non-zero.
+
+==============================================================================
+OTHERS								*fake-others*
+
+Please note the following two points,
+
+* This plugin uses |sha256()| as pseudo-random generator, so that means its
   distribution uniformity maybe worse than the other generator like
   Mersenne Twister or XorShift.
 
 * The built-in dictionaries are subject to change in future for
-  quority improvement.  If you have dissatisfaction with the contents,
-  please add your original dictionary on the |g:fake_src_paths|.
+  quority improvement without any announcement. If you have dissatisfaction
+  with the contents, please add your original dictionary on the
+  |g:fake_src_paths|.
 
 
 ------------------------------------------------------------------------------
 Data sources ~
 
 surname
-    http://www.sofeminine.co.uk/
+	http://www.sofeminine.co.uk/
 male_name
-    http://names.mongabay.com/male_names.htm
+	http://names.mongabay.com/male_names.htm
 female_name
-    http://names.mongabay.com/female_names.htm
+	http://names.mongabay.com/female_names.htm
 word
-    http://www.momswhothink.com/reading/list-of-nouns.html
+	http://www.momswhothink.com/reading/list-of-nouns.html
 job
-    http://kids.usa.gov/teens/jobs/a-z-list/
+	http://kids.usa.gov/teens/jobs/a-z-list/
 country
-    http://www.worldometers.info/world-population/population-by-country/
+	http://www.worldometers.info/world-population/population-by-country/
+
+==============================================================================
+CHANGELOG							*fake-changelog*
+
+0.1.0	2016-1-30
+	- Some Bugfixes
+
+0.0.2	2016-1-26
+	- Some Bugfixes
+
+0.0.1	2016-1-16
+	- Initial version.
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:fen:fdl=0:fdm=marker:
