@@ -12,7 +12,7 @@ justo id con ultrices omnes minim odioaccommodare. Consul omnium
 enim volumus lectus habeo fuisset pri utinam sem tamquam no.
 ```
 
-## Example
+## Usage
 
 ### Generate
 
@@ -201,9 +201,10 @@ which its choice is uniformly flat and not biased.
 If you need weighted choice, try a combination of `get()` and `betapdf()`.
 
 `betapdf()` is useful as the second argument of `get()`, and its shape chart
-ingicates its occurrence tendency or frequency. Refer to the next website
+ingicates its occurrence tendency or frequency. Refer to the following websites
 about beta distribution or a way to decide the shape parameters _a,b_.
 
+[Beta distribution - Wolfram|Alpha](http://www.wolframalpha.com/input/?i=beta+distribution)  
 [http://keisan.casio.com/exec/system/1180573226](http://keisan.casio.com/exec/system/1180573226)
 
 To tell the truth, the built-in "country" dictionary is ordered by population.
@@ -222,13 +223,13 @@ India
 China
 ```
 
-On the other hand,
+##### Other examples
 
 ```vim
 "" Get an age weighted by generation distribution
 call fake#define('age', 'float2nr(floor(110 * fake#betapdf(1.0, 1.45)))')
 
-"" Get a gTLD (its occurrence is ordered by number of websites)
+"" Get a domain (ordered by number of websites)
 call fake#define('gtld', 'fake#get(fake#load("gtld"),'
                         \ . 'fake#betapdf(0.2, 3.0))')
 
