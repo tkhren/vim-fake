@@ -282,31 +282,6 @@ function! fake#betapdf(a, b) abort "{{{1
 endfunction
 "}}}1
 
-function! fake#normalpdf(mu, sigma) abort "{{{1
-    let nv = 4.0 * exp(-0.5) / sqrt(2.0)
-    while 1
-        let u1 = fake#float()
-        let u2 = 1.0 - fake#float()
-        let z1 = nv * (u1 - 0.5) / u2
-        let z2 = z1 * z1 / 4.0
-        if z2 <= (-1.0 * log(u2))
-            break
-        endif
-    endwhile
-    return a:mu + z1 * a:sigma
-endfunction
-"}}}1
-
-function! fake#lognormalpdf(mu, sigma) abort  "{{{1
-    return exp(fake#normalpdf(a:mu, a:sigma))
-endfunction
-"}}}1
-
-function! fake#exppdf(lambda) abort  "{{{1
-    return -1.0 * log(1.0 - fake#float()) / a:lambda
-endfunction
-"}}}1
-
 function! fake#capitalize(s)  "{{{1
     return toupper(strpart(a:s,0,1)) . tolower(strpart(a:s,1))
 endfunction
@@ -338,7 +313,7 @@ if !empty(g:fake_bootstrap)
     call fake#define('country', 'fake#get(fake#load("country"),'
                             \ . 'fake#betapdf(0.2, 4.0))')
 
-    "" Get a gTLD (Occurance is ordered by number of websites)
+    "" Get a domain (ordered by number of websites)
     call fake#define('gtld', 'fake#get(fake#load("gtld"),'
                             \ . 'fake#betapdf(0.2, 3.0))')
 
