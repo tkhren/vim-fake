@@ -177,9 +177,13 @@ fake#float({min}, {max})
 fake#chars({length}, [{charset}])				*fake#chars()*
 	Return a string consists of random characters.
 	This function is useful to generate a password.
+        Some character sets are available: \w, \u, \l, \d, \x, \o
 >
-	:echo fake#chars(8, "abc")
+	:echo fake#chars(8, 'abc')
 	cbabccab
+
+	:echo fake#chars(8, '\d')
+	94610285
 <
 fake#choice({list})						*fake#choice()*
 	Choose a random element from the {list}.
@@ -366,7 +370,7 @@ On the other hand,
 			    \ . 'fake#gen("gtld")), "\\s", "-", "g"))')
 <
 
-The above definitions will be loaded when |g:fake_bootstrap| is non-zero.
+The above definitions will be loaded when |g:fake_bootstrap| is not empty.
 
 ==============================================================================
 OTHERS								*fake-others*
@@ -378,7 +382,7 @@ Please note the following two points,
   Mersenne Twister or XorShift.
 
 * The built-in dictionaries are subject to change in future for
-  quority improvement without any announcement. If you have dissatisfaction
+  quality improvement without any announcement. If you have dissatisfaction
   with the contents, please add your original dictionary on the
   |g:fake_src_paths|.
 

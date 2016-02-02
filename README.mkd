@@ -196,11 +196,11 @@ turpis mutat solet.
 	  where the shape parameters a,b > 0
 ```
 
-The `choice({list})` chooses a random element of the given list,
+The `fake#choice({list})` chooses a random element of the given list,
 which its choice is uniformly flat and not biased.
-If you need weighted choice, try a combination of `get()` and `betapdf()`.
+If you need weighted choice, try a combination of `fake#get()` and `fake#betapdf()`.
 
-`betapdf()` is useful as the second argument of `get()`, and its shape chart
+`fake#betapdf()` is useful as the second argument of `fake#get()`, and its shape chart
 indicates its occurrence tendency or frequency. Refer to the following websites
 about beta distribution or a way to decide the shape parameters _a,b_.
 
@@ -264,5 +264,5 @@ Please note the following two points,
   Mersenne Twister or XorShift.
 
 * The built-in dictionaries are subject to change in future for
-  quority improvement without any announcement. If you have dissatisfaction
+  quality improvement without any announcement. If you have dissatisfaction
   with the contents, please add your original dictionary on the `g:fake_src_paths`.
