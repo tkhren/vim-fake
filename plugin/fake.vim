@@ -9,20 +9,6 @@ endif
 let s:save_cpo = &cpo
 set cpo&vim
 
-
-if !exists('g:fake_bootstrap')
-    let g:fake_bootstrap = 0
-endif
-
-if !exists('g:fake_src_paths')
-    let g:fake_src_paths = []
-endif
-
-let builtin_src = fnamemodify(expand('<sfile>'), ':p:h:h') . '/src'
-let builtin_src = substitute(builtin_src, '\\', '/', 'g')
-let g:fake_src_paths = add(g:fake_src_paths, builtin_src)
-
-
 augroup AutoCmdFake
     autocmd!
 augroup END

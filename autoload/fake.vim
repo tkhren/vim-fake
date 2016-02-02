@@ -1,13 +1,24 @@
 " ===============================================================
 " Fake - Random dummy/filler text generator
 " ===============================================================
+let s:save_cpo = &cpo
+set cpo&vim
 
+"" Initialize global vaiables
+let g:fake_bootstrap = get(g:, 'fake_bootstrap', 0)
+let g:fake_src_paths = get(g:, 'fake_src_paths', [])
+
+"" Add the fallback directory
+let srcpath_list = [fnamemodify(expand('<sfile>'), ':p:h:h:gs!\\!/!') . '/src']
+let s:srcpath = join(extend(srcpath_list, g:fake_src_paths, 0), ',')
+
+"" Caches
 let s:fake_codes = {}
 let s:fake_cache = {}
 let s:fake_charset_cache = {}
 
 "================================================================
-" Path
+" Utility functions
 "================================================================
 function! s:path_isfile(path) abort  "{{{1
     return filereadable(resolve(expand(a:path)))
@@ -19,9 +30,6 @@ function! s:path_isdir(path) abort  "{{{1
 endfunction
 "}}}1
 
-"================================================================
-" Charset
-"================================================================
 function! s:charset(pattern) abort  "{{{1
     if has_key(s:fake_charset_cache, a:pattern)
         return s:fake_charset_cache[a:pattern]
@@ -154,10 +162,9 @@ function! fake#load(dictname) abort  "{{{1
         return s:fake_cache[a:dictname]
     endif
 
-    let srcpath = join(g:fake_src_paths, ',')
-    let srcpaths = split(globpath(srcpath, a:dictname))
+    let found = split(globpath(s:srcpath, a:dictname))
 
-    if empty(srcpaths)
+    if empty(found)
         echohl ErrorMsg
         echo printf('The `%s` was not defined or found in g:fake_src_paths.',
                     \ a:dictname)
@@ -165,14 +172,14 @@ function! fake#load(dictname) abort  "{{{1
         return []
     endif
 
-    if s:path_isfile(srcpaths[0])
-        let lines = readfile(srcpaths[0])
+    if s:path_isfile(found[0])
+        let lines = readfile(found[0])
         let s:fake_cache[a:dictname] = lines
         return s:fake_cache[a:dictname]
     else
         echohl ErrorMsg
         echo printf('`%s` is a directory. `%s` must be a valid file.',
-                    \ srcpaths[0],
+                    \ found[0],
                     \ a:dictname)
         echohl None
         return []
@@ -190,10 +197,9 @@ function! fake#has_keyname(keyname) abort  "{{{1
         return 1
     endif
 
-    let srcpath = join(g:fake_src_paths, ',')
-    let srcpaths = split(globpath(srcpath, a:keyname))
+    let found = split(globpath(s:srcpath, a:keyname))
 
-    if empty(srcpaths) || !s:path_isfile(srcpaths[0])
+    if empty(found) || !s:path_isfile(found[0])
         return 0
     endif
 
@@ -337,5 +343,9 @@ if !empty(g:fake_bootstrap)
     "" Overwrite the existing keyname
     " call fake#define('lipsum', 'join(map(range(fake#int(3,15)),"fake#gen(\"word\")"))')
 endif
+
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
 
 " vim: ft=vim fenc=utf-8 ff=unix foldmethod=marker:
