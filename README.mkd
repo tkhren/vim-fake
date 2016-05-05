@@ -1,6 +1,6 @@
 # Vim-Fake
 
-Vim-fake is a Vim plugin to provide a generator of random dummy/filler text,
+Vim-fake is a vim plugin to provide a generator of random dummy/filler text,
 which is useful to generate a nonsense text like [_Lorem ipsum_](https://en.wikipedia.org/wiki/Lorem_ipsum).
 
 ```vim
@@ -111,8 +111,11 @@ use the expression register like `<C-r>=fake#gen("male_name")`
 
 More easily, you probably want to use with a snippet plugin.
 
+[vim-fake & neosnippet example - Gist](https://gist.github.com/tkhren/9fbc7227c2e9d2f4319c)
 
-## Define New Generators
+![fakesnip](https://cloud.githubusercontent.com/assets/534457/13453296/34c4895a-e092-11e5-83d3-d81afee83c37.gif)
+
+## More Generators
 
 **You can define a new generator in various combination of the existing `{keyname}s`.**
 
@@ -259,7 +262,7 @@ let g:fake_src_paths = ['/home/user/.vim/fake_src1',
 
 Please note the following two points,
 
-* This plugin uses `sha256()` as pseudo-random generator, so that means its
+* This plugin uses `sha256()` as a pseudo-random generator, so that means its
   distribution uniformity maybe worse than the other generator like
   Mersenne Twister or XorShift.
 
