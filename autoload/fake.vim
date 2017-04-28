@@ -66,7 +66,7 @@ let s:Random = {
 
 function! s:Random.randombits() abort  "{{{1
     let hash = sha256(self._r)
-    let self._r = abs(str2nr(hash, 16))
+    let self._r = abs(str2nr(hash[0:7], 16))
     
     if empty(self.RAND_MAX)
         let rand_max = '7fffffff'  " Int32
