@@ -59,30 +59,41 @@ endfunction
 "================================================================
 " Pseudo-Random Generator
 "================================================================
-let s:Random = {
-    \ '_r': reltime()[1],
-    \ 'RAND_MAX': 0,
-    \ }
+
+let s:Random = {}
+
+function! s:Random.initialize(seed) abort  "{{{1
+    let int_max = 0x7fffffffffffffff   " for 32 and 64bit systems
+    let self.RAND_MAX = int_max
+    let self._HEX_MAX = printf('%x', int_max)
+    let self._MASK_WIDTH = len(self._HEX_MAX)
+    let self._r = a:seed
+endfunction
+"}}}1
 
 function! s:Random.randombits() abort  "{{{1
     let hash = sha256(self._r)
-    let self._r = abs(str2nr(hash[0:7], 16))
-    
-    if empty(self.RAND_MAX)
-        let rand_max = '7fffffff'  " Int32
-        while str2nr(rand_max, 16) < 0
-            let rand_max .= 'ffffffff'
-        endwhile
-        let self.RAND_MAX = str2nr(rand_max, 16)
+    let hash = tolower(strpart(hash, 0, self._MASK_WIDTH))
+
+    if hash > self._HEX_MAX
+        let hash = tr(hash[0], '89abcdef', '01234567') . hash[1:]
     endif
 
+    let self._r = str2nr(hash, 16)
     return self._r
 endfunction
 "}}}1
 
+call s:Random.initialize(reltime()[1])
+
 "================================================================
 " General
 "================================================================
+function! fake#bits() abort  "{{{1
+    return s:Random.randombits()
+endfunction
+"}}}1
+
 function! fake#int(...) abort  "{{{1
     "" Return a random integer
     "" int()       range [0, MAX_INT]
