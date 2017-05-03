@@ -68,18 +68,24 @@ function! s:Random.initialize(seed) abort  "{{{1
     let self._HEX_MAX = printf('%x', int_max)
     let self._MASK_WIDTH = len(self._HEX_MAX)
     let self._r = a:seed
+    let self._buffer = ''
 endfunction
 "}}}1
 
 function! s:Random.randombits() abort  "{{{1
-    let hash = sha256(self._r)
-    let hash = tolower(strpart(hash, 0, self._MASK_WIDTH))
+    if len(self._buffer) < self._MASK_WIDTH
+        let self._buffer = tolower(sha256(self._r))
+    endif
+
+    let hash = self._buffer[:self._MASK_WIDTH - 1]
+    let self._buffer = self._buffer[self._MASK_WIDTH:]
 
     if hash > self._HEX_MAX
         let hash = tr(hash[0], '89abcdef', '01234567') . hash[1:]
     endif
 
     let self._r = str2nr(hash, 16)
+
     return self._r
 endfunction
 "}}}1
@@ -126,7 +132,7 @@ function! fake#float(...) abort  "{{{1
         let b = get(a:000, 1) * 1.0
     elseif a:0 == 1
         let a = 0.0
-        let b = get(a:000[0], 0) * 1.0
+        let b = get(a:000, 0) * 1.0
     else
         let a = 0.0
         let b = 1.0
