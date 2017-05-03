@@ -127,7 +127,7 @@ function! fake#float(...) abort  "{{{1
         let b = get(a:000, 1) * 1.0
     elseif a:0 == 1
         let a = 0.0
-        let b = get(a:000[0], 0) * 1.0
+        let b = get(a:000, 0) * 1.0
     else
         let a = 0.0
         let b = 1.0
