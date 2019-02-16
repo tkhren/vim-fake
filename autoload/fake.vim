@@ -224,6 +224,16 @@ function! fake#has_keyname(keyname) abort  "{{{1
 endfunction
 "}}}1
 
+function! fake#get_keynames() abort  "{{{1
+    let in_memory_keys = keys(s:fake_codes) + keys(s:fake_cache)
+
+    let files = filter(split(globpath(s:srcpath, '*')), 's:path_isfile(v:val)')
+    let file_keys = map(files, 'fnamemodify(v:val, ":t")')
+
+    return uniq(sort(in_memory_keys + file_keys))
+endfunction
+"}}}1
+
 function! fake#gen(keyname) abort  "{{{1
     if has_key(s:fake_codes, a:keyname)
         return eval(s:fake_codes[a:keyname])
