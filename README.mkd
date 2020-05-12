@@ -151,6 +151,19 @@ call fake#define('paragraph', 'join(map(range(fake#int(3,10)),"fake#gen(\"senten
 
 "" Alias
 call fake#define('lipsum', 'fake#gen("paragraph")')
+
+let hex = '1234567890abcdef'
+call fake#define('uuid',
+      \   'fake#chars(8, "' . hex . '") '
+      \ . ' . "-" . '
+      \ . 'fake#chars(4, "' . hex . '") '
+      \ . ' . "-" . '
+      \ . 'fake#chars(4, "' . hex . '") '
+      \ . ' . "-" . '
+      \ . 'fake#chars(4, "' . hex . '") '
+      \ . ' . "-" . '
+      \ . 'fake#chars(12, "' . hex . '")'
+      \ )
 ```
 
 After these definitions,
@@ -175,6 +188,9 @@ netus exerci. Fusce mutat posidonium el est nominati o iriure nec
 quidam soluta accusam? Felis pericula leo aeque turpis ne illum integer.
 Cetero nullam sonet zril vulputate. Cetero corrumpit quisque nam doming
 turpis mutat solet.
+
+:echo fake#gen("uuid")
+1f772b3c-55fe-db17-3fab-4c4dc6e3b46a
 ```
 
 
