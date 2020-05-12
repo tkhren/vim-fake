@@ -369,6 +369,19 @@ if !empty(g:fake_bootstrap)
 
     "" Overwrite the existing keyname
     " call fake#define('lipsum', 'join(map(range(fake#int(3,15)),"fake#gen(\"word\")"))')
+
+    let hex = '1234567890abcdef'
+    call fake#define('uuid',
+          \   'fake#chars(8, "' . hex . '") '
+          \ . ' . "-" . '
+          \ . 'fake#chars(4, "' . hex . '") '
+          \ . ' . "-" . '
+          \ . 'fake#chars(4, "' . hex . '") '
+          \ . ' . "-" . '
+          \ . 'fake#chars(4, "' . hex . '") '
+          \ . ' . "-" . '
+          \ . 'fake#chars(12, "' . hex . '")'
+          \ )
 endif
 
 
